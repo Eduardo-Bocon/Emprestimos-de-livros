@@ -1,3 +1,6 @@
+import atexit
+import csv
+
 from Pessoa import *
 from Genero import *
 from datetime import date
@@ -7,9 +10,6 @@ livros = list()
 emprestimos = list()
 
 today = date.today()
-
-resposta = 0
-possiveisRespostas = [1, 2, 3, 4, 5, 6, 7]
 
 def cadastrar_emprestimo():
 
@@ -48,14 +48,57 @@ def cadastrar_emprestimo():
             print("Amigo não encontrado.")
     resposta = int(input("1 - Colocar data atual.\n2 - Colocar data manualmente.\n"))
     if resposta == 1:
-        amigoEmprestimo.add_emprestimo(Emprestimo(livroEmprestimo, today.strftime("%d/%m/%y")))
+        novoEmprestimo = Emprestimo(livroEmprestimo, today.strftime("%d/%m/%y"))
     elif resposta == 2:
         data = input("Coloque a data no formato dd/mm/aaaa. ")
-        amigoEmprestimo.add_emprestimo(Emprestimo(livroEmprestimo, data))  # todo: checar input da data
-    print(amigoEmprestimo.emprestimos[-1])
+        ovoEmprestimo = Emprestimo(livroEmprestimo, data)  # todo: checar input da data
+    amigoEmprestimo.add_emprestimo(novoEmprestimo)
+    emprestimos.append(novoEmprestimo)
+    print(novoEmprestimo.mostrar_informacoes())
 
+def cadastrar_usuario():
+    nome = input("Digite o nome do novo usuario: ")  # todo: limitar respostas
+    telefone = input("Digite o telefone do novo usuario: ")
+    email = input("Digite o email do novo usuario: ")
+    usuarios.append(Pessoa(nome=nome, telefone=telefone, email=email))
+    print("Usuario cadastrado!")
+    usuarios[-1].mostrar_informacoes()
+
+def cadastrar_livro():
+    titulo = input("Digite o titulo do novo livro: ")
+    autor = input("Digite o autor do novo livro: ")
+    genero = Genero.AVENTURA  # todo: escolher genero
+    faixaEtaria = int(input("Digite a faixa etaria do novo livro: "))  # todo: revisar a faixa etaria
+    livros.append(Livro(titulo=titulo, autor=autor, genero=genero, faixaEtaria=faixaEtaria))
+    print("Livro cadastrado!")
+    livros[-1].mostrar_informacoes()
+
+def salvar_informacoes():
+    with open('usuarios_info.csv', 'w', newline='') as file_csv:
+        writer = csv.writer(file_csv)
+        for usuario in usuarios:
+            writer.writerow([usuario.nome,usuario.telefone,usuario.email])
+
+atexit.register(salvar_informacoes)
+
+def pegarInformacoes():
+    with open('usuarios_info.csv', 'r', newline='') as file_csv:
+
+        reader_csv = csv.reader(file_csv)
+        for linha in file_csv:
+            if linha != None:
+                nome_info, telefone_info, email_info = linha.split(",")
+                email_info = email_info[:-2]  # o fim de linha vem com um '\r' e um '\n' no final
+                usuario = Pessoa(nome=nome_info, telefone=telefone_info, email=email_info)
+                usuarios.append(usuario)
+
+resposta = 0
+possiveisRespostas = [1, 2, 3, 4, 5, 6, 7]
 
 def main():
+
+    pegarInformacoes()
+
     while 1:
 
         while 1:
@@ -74,12 +117,7 @@ def main():
                     break
 
         if resposta == 1:
-            nome = input("Digite o nome do novo usuario: ")  # todo: limitar respostas
-            telefone = input("Digite o telefone do novo usuario: ")
-            email = input("Digite o email do novo usuario: ")
-            usuarios.append(Pessoa(nome=nome, telefone=telefone, email=email))
-            print("Usuario cadastrado!")
-            usuarios[-1].mostrar_informacoes()
+            cadastrar_usuario()
 
         elif resposta == 2:
             for usuario in usuarios:
@@ -93,13 +131,7 @@ def main():
                 emprestimo.mostrar_informacoes()
 
         elif resposta == 5:
-            titulo = input("Digite o titulo do novo livro: ")
-            autor = input("Digite o autor do novo livro: ")
-            genero = Genero.AVENTURA  # todo: escolher genero
-            faixaEtaria = int(input("Digite a faixa etaria do novo livro: "))  # todo: revisar a faixa etaria
-            livros.append(Livro(titulo=titulo, autor=autor, genero=genero, faixaEtaria=faixaEtaria))
-            print("Livro cadastrado!")
-            livros[-1].mostrar_informacoes()
+            cadastrar_livro()
 
         elif resposta == 6:
             for livro in livros:
@@ -111,4 +143,5 @@ def main():
 if __name__ == "__main__":
     main()
 
+# todo: salvar informações
 
